@@ -1,5 +1,4 @@
 import tensorflow as tf
-# noinspection PyUnresolvedReferences
 import tensorflow_text as text
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -22,7 +21,6 @@ vision_encoder = tf.keras.models.load_model('vision_encoder')
 text_encoder = tf.keras.models.load_model('hm/text_encoder')
 
 image_paths = []
-# (p.resolve() for p in Path(path).glob("**/*") if p.suffix in {".c", ".cc", ".cpp", ".hxx", ".h"})
 for path in Path(values["-FOLDER-"]).rglob('*'):
     if path.suffix in [".jpg"]:
         image_paths.append(str(path.resolve()))
@@ -43,17 +41,12 @@ image_embeddings = vision_encoder.predict(
 
 
 def find_matches(image_embeddings, queries, k=9, normalize=True):
-    # Get the embedding for the query.
     query_embedding = text_encoder(tf.convert_to_tensor(queries))
-    # Normalize the query and the image embeddings.
     if normalize:
         image_embeddings = tf.math.l2_normalize(image_embeddings, axis=1)
         query_embedding = tf.math.l2_normalize(query_embedding, axis=1)
-    # Compute the dot product between the query and the image embeddings.
     dot_similarity = tf.matmul(query_embedding, image_embeddings, transpose_b=True)
-    # Retrieve top k indices.
     results = tf.math.top_k(dot_similarity, k).indices.numpy()
-    # Return matching image paths.
     return [[image_paths[idx] for idx in indices] for indices in results]
 
 
@@ -61,7 +54,7 @@ query = values["-QUERY-"]
 matches = find_matches(image_embeddings, [query], normalize=True)[0]
 
 plt.figure(figsize=(20, 20))
-for i in range(3):
+for i in range(9):
     ax = plt.subplot(3, 3, i + 1)
     plt.imshow(mpimg.imread(matches[i]))
     plt.axis("off")
